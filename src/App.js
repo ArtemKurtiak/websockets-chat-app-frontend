@@ -1,25 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import Chat from "./Chat";
+import {useEffect, useState} from "react";
+import openSocket, {io} from "socket.io-client";
+import {BrowserRouter, NavLink} from "react-router-dom";
+import {Route, Switch, useHistory} from "react-router";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+let socket;
+const ENDPOINT = 'http://localhost:5000'
+
+
+const App = () => {
+    const [name, setName] = useState('John')
+    const history = useHistory();
+    const [groups, setGroups] = useState([])
+    useEffect(() => {
+        socket = io(ENDPOINT)
+
+    } ,[])
+
+    useEffect(() => {
+        socket.on('groups', (groups) => {
+            setGroups(groups)
+        })
+    }, [])
+
+    return <div>
+        <BrowserRouter>
+            <Route path='/' exact >
+                <input type="text" onChange={(e) => {
+                    setName(e.target.value)
+                }} />
+        Groups: {
+        groups.map((el) => {
+            return <NavLink to={`/chat/${el.id}`} >  <div>
+                {el.name}
+            </div>
+            </NavLink>
+        })
+    }
+            </Route>
+
+
+        <Switch>
+            <Route path='/chat/:id' exact >
+                <Chat socket={socket} name={name}  />
+            </Route>
+        </Switch>
+    </BrowserRouter>
+
     </div>
-  );
 }
 
 export default App;
